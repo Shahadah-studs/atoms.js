@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Atoms.js — Reactive UI + 3D Engine</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1><svg xmlns="http://w3.org" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccff00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="12" r="1"/><path d="M20.2 20.2c2.04-2.03.02-7.36-4.5-11.9-4.54-4.52-9.87-6.54-11.9-4.5-2.04 2.03-.02 7.36 4.5 11.9 4.54 4.52 9.87 6.54 11.9 4.5"/><path d="M15.7 15.7c4.52-4.54 6.54-9.87 4.5-11.9-2.03-2.04-7.36-.02-11.9 4.5-4.52 4.54-6.54 9.87-4.5 11.9 2.03 2.04 7.36.02 11.9-4.5"/>
+</svg> Atoms.js</h1>
+    <p>A zero-dependency JavaScript library uniting reactive DOM state with declarative WebGL 3D scenes.</p>
+  </header>
+
+  <main id="app"></main>
+
+  <script type="module">
+    import { atom, h, mount, Scene3D } from './atoms.js';
+
+    function App() {
+      const rotation = atom(0.4);
+      const autoSpin = atom(false);
+
+      setInterval(() => {
+        if (autoSpin.value) {
+          rotation.value = +(rotation.value + 0.03).toFixed(2);
+        }
+      }, 16);
+
+      return h('div', { class: 'card' },
+        h('h2', {}, 'Interactive 3D Atom Demo'),
+        Scene3D({
+          width: 480,
+          height: 320,
+          rotationY: () => rotation.value,
+          color: [0.38, 0.65, 0.98]
+        }),
+        h('div', { class: 'controls' },
+          h('p', {}, () => `Rotation Angle: ${rotation.value} rad`),
+          h('button', { onclick: () => rotation.value += 0.25 }, 'Rotate +0.25'),
+          h('button', { onclick: () => autoSpin.value = !autoSpin.value },
+            () => autoSpin.value ? 'Stop Spin' : 'Auto Spin'
+          )
+        )
+      );
+    }
+
+    mount(App, document.getElementById('app'));
+  </script>
+</body>
+</html>
