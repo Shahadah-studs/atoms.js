@@ -8,40 +8,75 @@
 </head>
 <body>
   <header>
-    <h1><svg xmlns="http://w3.org" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccff00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="12" cy="12" r="1"/><path d="M20.2 20.2c2.04-2.03.02-7.36-4.5-11.9-4.54-4.52-9.87-6.54-11.9-4.5-2.04 2.03-.02 7.36 4.5 11.9 4.54 4.52 9.87 6.54 11.9 4.5"/><path d="M15.7 15.7c4.52-4.54 6.54-9.87 4.5-11.9-2.03-2.04-7.36-.02-11.9 4.5-4.52 4.54-6.54 9.87-4.5 11.9 2.03 2.04 7.36.02 11.9-4.5"/>
-</svg> Atoms.js</h1>
-    <p>A zero-dependency JavaScript library uniting reactive DOM state with declarative WebGL 3D scenes.</p>
+    <h1>⚛️ Atoms.js</h1>
+    <p>Reactive state + shaded 3D WebGL scenes in under 200 lines of zero-dependency JS.</p>
   </header>
 
   <main id="app"></main>
 
   <script type="module">
-    import { atom, h, mount, Scene3D } from './atoms.js';
+    import { atom, h, mount, Scene3D, SphereGeometry, TorusGeometry } from './atoms.js';
 
     function App() {
-      const rotation = atom(0.4);
-      const autoSpin = atom(false);
+      const time = atom(0);
+      const speed = atom(1.0);
+      const nucleusScale = atom(1.0);
+      const themeIndex = atom(0);
 
-      setInterval(() => {
-        if (autoSpin.value) {
-          rotation.value = +(rotation.value + 0.03).toFixed(2);
-        }
-      }, 16);
+      const themes = [
+        { name: 'Quantum Blue', core: [0.22, 0.65, 1.0], ring: [0.55, 0.85, 1.0] },
+        { name: 'Plasma Gold',  core: [1.0, 0.65, 0.15], ring: [1.0, 0.88, 0.45] },
+        { name: 'Neon Emerald', core: [0.15, 0.85, 0.55], ring: [0.5, 1.0, 0.8] }
+      ];
+
+      function animate() {
+        time.value += 0.025 * speed.value;
+        requestAnimationFrame(animate);
+      }
+      requestAnimationFrame(animate);
+
+      const nucleus = SphereGeometry(0.45, 32);
+      const orbitRing = TorusGeometry(1.35, 0.032, 16, 72);
 
       return h('div', { class: 'card' },
-        h('h2', {}, 'Interactive 3D Atom Demo'),
+        h('h2', {}, 'Interactive 3D Atom (Drag to Orbit)'),
         Scene3D({
-          width: 480,
-          height: 320,
-          rotationY: () => rotation.value,
-          color: [0.38, 0.65, 0.98]
+          width: 600,
+          height: 380,
+          meshes: [
+            // Glowing Nucleus
+            {
+              geometry: nucleus,
+              scale: () => nucleusScale.value + Math.sin(time.value * 3) * 0.04,
+              color: () => themes[themeIndex.value].core
+            },
+            // Three Tilted Electron Rings
+            {
+              geometry: orbitRing,
+              rotation: () => [0.6, time.value, 0.4],
+              color: () => themes[themeIndex.value].ring
+            },
+            {
+              geometry: orbitRing,
+              rotation: () => [-0.6, time.value * 1.2, -0.4],
+              color: () => themes[themeIndex.value].ring
+            },
+            {
+              geometry: orbitRing,
+              rotation: () => [1.4, 0.3, time.value * 0.9],
+              color: () => themes[themeIndex.value].ring
+            }
+          ]
         }),
         h('div', { class: 'controls' },
-          h('p', {}, () => `Rotation Angle: ${rotation.value} rad`),
-          h('button', { onclick: () => rotation.value += 0.25 }, 'Rotate +0.25'),
-          h('button', { onclick: () => autoSpin.value = !autoSpin.value },
-            () => autoSpin.value ? 'Stop Spin' : 'Auto Spin'
+          h('p', {}, () => `Orbit Speed: ${speed.value.toFixed(1)}x | Nucleus Scale: ${nucleusScale.value.toFixed(1)}`),
+          h('button', { onclick: () => speed.value = speed.value > 0 ? 0 : 1.0 },
+            () => speed.value > 0 ? 'Pause Orbit' : 'Resume Orbit'
+          ),
+          h('button', { onclick: () => speed.value = +(speed.value + 0.5).toFixed(1) }, 'Speed +'),
+          h('button', { onclick: () => nucleusScale.value = nucleusScale.value >= 1.4 ? 0.8 : +(nucleusScale.value + 0.2).toFixed(1) }, 'Resize Core'),
+          h('button', { onclick: () => themeIndex.value = (themeIndex.value + 1) % themes.length },
+            () => `Theme: ${themes[themeIndex.value].name}`
           )
         )
       );
