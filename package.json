@@ -1,0 +1,14 @@
+{
+  "name": "atoms-js",
+  "version": "1.0.0",
+  "description": "Reactive UI and Declarative 3D library for JavaScript",
+  "type": "module",
+  "main": "./src/atoms.js",
+  "exports": {
+    ".": "./src/atoms.js"
+  },
+  "scripts": {
+    "build": "mkdir -p dist && cp src/atoms.js dist/atoms.js && cp src/atoms.js docs/atoms.js"
+  },
+  "license": "MIT"
+}
